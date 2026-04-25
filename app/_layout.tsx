@@ -28,19 +28,39 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return;
     SplashScreen.hideAsync();
-    if (session) {
-      router.replace('/(app)/dashboard');
-    } else {
+
+    if (!session) {
       router.replace('/(auth)/login');
+      return;
     }
+
+    // Check if user has society
+    supabase
+      .from('users')
+      .select('society_id')
+      .eq('id', session.user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.society_id) {
+          router.replace('/(app)/dashboard');
+        } else {
+          router.replace('/(onboarding)/welcome');
+        }
+      });
   }, [session, loading]);
 
   return (
     <SafeAreaProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name='index' />
-        <Stack.Screen name='(auth)' />
-        <Stack.Screen name='(app)' />
+        <Stack.Screen name='(auth)/login' />
+        <Stack.Screen name='(auth)/register' />
+        <Stack.Screen name='(onboarding)' />
+        <Stack.Screen name='(onboarding)/create-society' />
+        <Stack.Screen name='(onboarding)/join-society' />
+        <Stack.Screen name='(onboarding)/request-society' />
+        <Stack.Screen name='(onboarding)/pending' />
+        <Stack.Screen name='(app)/dashboard' />
       </Stack>
     </SafeAreaProvider>
   );
